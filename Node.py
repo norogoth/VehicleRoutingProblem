@@ -4,5 +4,5 @@ class Node:
 
     def __init__(self, address, distanceArray, isCompleted):
         self.id = self.idCounter
-        self.idCounter+=1
+        self.idCounter += 1
 

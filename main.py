@@ -1,5 +1,7 @@
 import networkx as nx
 
 def main():
-    print("penis farts")
+    x = 1
+
+
 main()
