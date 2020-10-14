@@ -3,6 +3,9 @@ class HashMap:
         self.size = 100
         self.map = [None] * self.size
 
+    def get_map(self):
+        return self.map
+
     def get_hash(self, key):
         hash_var = 0
         for char in str(key):
@@ -34,6 +37,7 @@ class HashMap:
 
 
     def get(self, key):
+        key = str(key)
         key_hash = self.get_hash(key)
         if self.map[key_hash] is not None:
             for pair in self.map[key_hash]:

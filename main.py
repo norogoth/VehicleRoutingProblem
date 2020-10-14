@@ -1,3 +1,6 @@
+#Landon Aaker
+#ID: 001236202
+
 from HashMap import HashMap
 from Node import Node
 from Truck import Truck
@@ -16,23 +19,7 @@ def main():
             packageHashMap.add(row['Package ID'], row)
     packageCSV.close()
 
-    # with open('Resources/AddressIdMap.csv','r') as distanceArrayCSV:
-    #    dict_read_dist_array = DictReader(distanceArrayCSV)
-    #    column_names = dict_read_dist_array.fieldnames
-    #    column_names[0] = 'ID'
-    #    for row in dict_read_dist_array:
-    #         print(row)
-    # distanceArrayCSV.close()
-    #
-    # with open('Resources/DistanceTable4.csv','r') as distanceArrayCSV:
-    #    dict_read_dist_array = DictReader(distanceArrayCSV)
-    #    column_names = dict_read_dist_array.fieldnames
-    #    column_names[0] = 'ID'
-    #    for row in dict_read_dist_array:
-    #         print(row)
-    # distanceArrayCSV.close()
-
-    #packageHashMap.print()
+    print(packageHashMap.get(1)['Package ID'])
     #print(packageHashMap.map)
     Truck.load(packageHashMap)
     Node.init_everything()
