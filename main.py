@@ -19,10 +19,16 @@ def main():
             packageHashMap.add(row['Package ID'], row)
     packageCSV.close()
 
-    print(packageHashMap.get(1)['Package ID'])
+    #print(packageHashMap.get(1)['Package ID'])
     #print(packageHashMap.map)
+    #Truck.load(packageHashMap)
+    # for truck in Truck.truck_list:
+    #     print("Truck number: ",truck.number,"\n")
+    #     for package in truck.packages:
+    #         print(package)
+    #Node.printDistArray()
+    Truck.create_trucks()
     Truck.load(packageHashMap)
     Node.init_everything()
-    #Node.printDistArray()
 
 main()
