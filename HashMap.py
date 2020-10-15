@@ -1,4 +1,5 @@
 class HashMap:
+
     def __init__(self):
         self.size = 100
         self.map = [None] * self.size

@@ -21,7 +21,7 @@ class Route:
             Route.nodes_to_travel.append(i)
 
     @staticmethod
-    def init_everything():
+    def init_distance_table():
         #initialize Distance Table
         with open('Resources/DistanceTable4.csv', 'r') as distanceArrayCSV:
             dict_read_dist_array = DictReader(distanceArrayCSV)
@@ -51,8 +51,6 @@ class Route:
                     lowest = distance_to_this_node
         #print("lowest is ", lowest)
         return lowest_node_id
-        Route.nodes_to_travel.append(lowest_node_id)
-        #print("lowest for ",id," is :",i)
 
     @staticmethod
     def get_distance_to_node(node_one, node_two):
@@ -72,7 +70,8 @@ class Route:
 
     @staticmethod
     # Using the shortest path algorithm, we will set the routes for the trucks
-    def create_route():
+
+    def create_route(packageHashMap):
         truck_one = Truck.truck_list[0]
         truck_two = Truck.truck_list[1]
         next_node = -1
@@ -83,6 +82,8 @@ class Route:
                     next_node = Route.get_closet_node(truck.current_node) #get the closest node the current node of the truck
                     #print("next node will be: ", next_node)
                     Route.nodes_to_travel.remove(next_node) #take away nodes we have travelled to
+                    #TODO: Make a convert minutes to time function.
+                    #Route.node_travel_timestamp[truck.current_node] =
                     Route.travel_to_next_node(truck, truck.current_node, next_node)
         #print("going home")
         for truck in [truck_one, truck_two]:
@@ -102,15 +103,19 @@ class Route:
         for item in packageHashMap.map:
             if item is not None:
                 pd = item[0][1] #Get package dictionary
+                item_address_id = item[0][1]["Address ID"]
+                #print("Address ID is "+item_address_id+"|  nodes_to_travel is "+str(Route.nodes_to_travel))
+                if item_address_id in Route.nodes_to_travel:
+                    status = "not delivered"
+                else:
+                    status = "delivered"
+                #TODO: find status of package by linking it to nodes_to_travel then linking that to the package
                 print(("Package ID: " + str(pd["Package ID"])+" | ").rjust(20," ")
-                        +("Address: " + str(pd["Address"])+" | ").rjust(50," ")
-                        +("City: " + str(pd["City"])+" | ").rjust(30," ")
-                        +("State: " + str(pd["State"])+" | ").rjust(20," ")
-                      + ("Zip: " + str(pd["Zip"]) + " | ").rjust(17," ")
+                        +("Address: " + str(pd["Address"])+", "+str(pd["City"])+", "+ str(pd["State"])+ " " + str(pd["Zip"]) +" |").rjust(60," ")
                       + ("Deadline: " + str(pd["Deadline"]) + " | ").rjust(30," ")
                       + ("Kg: " + str(pd["Kg"]) + " | ").rjust(10," ")
                       + ("Special Notes" + str(pd["Special Notes"]) + " | ").rjust(90," ")
-                      + ("Status: " ).rjust(20," ")
+                      + ("Status: "+status).rjust(20," ")
                 )
 
     @staticmethod

@@ -21,9 +21,9 @@ def main():
 
     Truck.create_trucks()
     Truck.load(packageHashMap) #load all the trucks with the packages. Clustered by zip code. Round robin zip code assignment.
-    Route.init_everything()
+    Route.init_distance_table()
     Route.init_nodes()
-    Route.create_route()
+    Route.create_route(packageHashMap)
     Route.print_package_statuses(packageHashMap)
 
 main()
