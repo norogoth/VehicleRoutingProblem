@@ -2,7 +2,7 @@
 #ID: 001236202
 
 from HashMap import HashMap
-from Node import Node
+from Route import Route
 from Truck import Truck
 import csv
 from csv import DictReader
@@ -19,16 +19,11 @@ def main():
             packageHashMap.add(row['Package ID'], row)
     packageCSV.close()
 
-    #print(packageHashMap.get(1)['Package ID'])
-    #print(packageHashMap.map)
-    #Truck.load(packageHashMap)
-    # for truck in Truck.truck_list:
-    #     print("Truck number: ",truck.number,"\n")
-    #     for package in truck.packages:
-    #         print(package)
-    #Node.printDistArray()
     Truck.create_trucks()
-    Truck.load(packageHashMap)
-    Node.init_everything()
+    Truck.load(packageHashMap) #load all the trucks with the packages. Clustered by zip code. Round robin zip code assignment.
+    Route.init_everything()
+    Route.init_nodes()
+    Route.create_route()
+    Route.print_package_statuses(packageHashMap)
 
 main()

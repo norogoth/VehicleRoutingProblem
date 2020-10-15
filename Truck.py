@@ -50,7 +50,6 @@ class Truck:
                 else:
                     current_truck += 1
         #load packages on trucks based on zip code
-        print(Truck.truck_list[0].zip_array)
         for truck in Truck.truck_list:
             for package in package_hash_map.get_map():
                 if package is not None:
