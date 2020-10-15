@@ -1,12 +1,17 @@
 from csv import DictReader
 from Truck import Truck
+import datetime
+from datetime import timedelta
+
 class Route:
 
     idCounter = 0
     distance_dictionary = {}
     nodes_to_travel = []
     node_travel_timestamp = {}
-    minutes_elapsed = [0,0]
+    minutes_elapsed = [0, 0]
+    time = [datetime.datetime(2020, 1, 1, 8, 0), datetime.datetime(2020, 1, 1, 8, 0)]
+
 
     def __init__(self, address, distanceArray, isCompleted):
         self.id = Route.idCounter
@@ -19,6 +24,11 @@ class Route:
     def init_nodes():
         for i in range(1, 27):
             Route.nodes_to_travel.append(i)
+
+    @staticmethod
+    def increment_time(truck_number, miles):
+        minutes_passed = Route.miles_to_minutes(miles)
+        Route.time[truck_number] += timedelta(minutes=minutes_passed)
 
     @staticmethod
     def init_distance_table():
@@ -80,23 +90,32 @@ class Route:
             for truck in [truck_one, truck_two]:
                 if isinstance(truck, Truck):
                     next_node = Route.get_closet_node(truck.current_node) #get the closest node the current node of the truck
-                    #print("next node will be: ", next_node)
+                    miles_to_next_node = Route.get_distance_to_node(truck.current_node, next_node)
+                    Route.increment_time(truck.number, miles_to_next_node) #move the clock for this truck
                     Route.nodes_to_travel.remove(next_node) #take away nodes we have travelled to
-                    #TODO: Make a convert minutes to time function.
-                    #Route.node_travel_timestamp[truck.current_node] =
-                    Route.travel_to_next_node(truck, truck.current_node, next_node)
-        #print("going home")
+                    Route.travel_to_next_node(truck, next_node)
+                    Route.package_is_delivered(packageHashMap, next_node, Route.time[truck.number])
         for truck in [truck_one, truck_two]:
-            Route.travel_to_next_node(truck, truck.current_node, 0)
-
+            Route.travel_to_next_node(truck, 0)
 
     @staticmethod
-    def travel_to_next_node(truck, current_node, next_node):
+    def package_is_delivered(packagehashmap, address_number, timestamp):
+        for package in packagehashmap.map:
+            if package is not None:
+                if package[0][1]["Address ID"] == str(address_number):
+                    package[0][1]["Status"] = "Delivered"
+                    package[0][1]["Time Delivered"] = timestamp
+                print(package[0][1])
+
+    @staticmethod
+    def travel_to_next_node(truck, next_node):
         distance_to_next_node = Route.get_distance_to_node(truck.current_node, next_node)  # get distance to the next node
         Route.minutes_elapsed[truck.number] += Route.miles_to_minutes(float(distance_to_next_node))  # add the minutes travelled to minutes_elapsed array
         #print("Truck ", truck.number, "has traveled for ", Route.minutes_elapsed[truck.number]," minutes and ",Route.minutes_to_miles(Route.minutes_elapsed[truck.number])," miles.")
-        Route.node_travel_timestamp[next_node] = float(Route.minutes_elapsed[truck.number]) + float(
-            Route.get_distance_to_node(truck.current_node, next_node))
+        Route.node_travel_timestamp[next_node] = Route.time[truck.number]
+
+    # @staticmethod
+    # def
 
     @staticmethod
     def print_package_statuses(packageHashMap):
@@ -105,17 +124,14 @@ class Route:
                 pd = item[0][1] #Get package dictionary
                 item_address_id = item[0][1]["Address ID"]
                 #print("Address ID is "+item_address_id+"|  nodes_to_travel is "+str(Route.nodes_to_travel))
-                if item_address_id in Route.nodes_to_travel:
-                    status = "not delivered"
-                else:
-                    status = "delivered"
                 #TODO: find status of package by linking it to nodes_to_travel then linking that to the package
                 print(("Package ID: " + str(pd["Package ID"])+" | ").rjust(20," ")
-                        +("Address: " + str(pd["Address"])+", "+str(pd["City"])+", "+ str(pd["State"])+ " " + str(pd["Zip"]) +" |").rjust(60," ")
+                        +("Address: " + str(pd["Address"])+", "+str(pd["City"])+", "+ str(pd["State"])+ " " + str(pd["Zip"]) +" |").rjust(65," ")
                       + ("Deadline: " + str(pd["Deadline"]) + " | ").rjust(30," ")
                       + ("Kg: " + str(pd["Kg"]) + " | ").rjust(10," ")
                       + ("Special Notes" + str(pd["Special Notes"]) + " | ").rjust(90," ")
-                      + ("Status: "+status).rjust(20," ")
+                      + ("Status: "+ str(pd["Status"])).rjust(20," ")
+                      + ("Status: " + str(pd["Time Delivered"])).rjust(20, " ")
                 )
 
     @staticmethod
