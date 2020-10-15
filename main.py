@@ -6,6 +6,7 @@ from Route import Route
 from Truck import Truck
 import csv
 from csv import DictReader
+import datetime
 
 def main():
 
@@ -24,6 +25,12 @@ def main():
     Route.init_distance_table()
     Route.init_nodes()
     Route.create_route(packageHashMap)
+    nine_datetime = datetime.datetime(2020, 1, 1, 9, 00)
+    ten_datetime = datetime.datetime(2020, 1, 1, 10, 00)
+    one_datetime = datetime.datetime(2020, 1, 1, 13, 00)
+    Route.print_status_at_time(packageHashMap, nine_datetime)
+    Route.print_status_at_time(packageHashMap, ten_datetime)
+    Route.print_status_at_time(packageHashMap, one_datetime)
     Route.print_package_statuses(packageHashMap)
 
 main()

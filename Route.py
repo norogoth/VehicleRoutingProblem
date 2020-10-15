@@ -118,21 +118,43 @@ class Route:
     # def
 
     @staticmethod
-    def print_package_statuses(packageHashMap):
-        for item in packageHashMap.map:
+
+    def print_status_at_time(package_hash_map, date_time):
+        print( "===============================================\n"
+              + "Package status by " + str(date_time.hour) + ":" + str(date_time.minute) + "\n"
+        + "===============================================\n")
+        print(("Package ID" + " | ").rjust(20, " ")
+             + ("Address" + " |").rjust(70, " ")
+             + ("Deadline: " + " | ").rjust(30, " ")
+             + ("Kg" + " | ").rjust(10, " ")
+             + ("Special Notes" + " | ").rjust(70, " ")
+             + ("Status" + " |   ").rjust(20, " ")
+             + ("TimeStamp" + " |   ").rjust(23, " ")
+             )
+        for item in package_hash_map.map:
             if item is not None:
-                pd = item[0][1] #Get package dictionary
-                item_address_id = item[0][1]["Address ID"]
-                #print("Address ID is "+item_address_id+"|  nodes_to_travel is "+str(Route.nodes_to_travel))
-                #TODO: find status of package by linking it to nodes_to_travel then linking that to the package
-                print(("Package ID: " + str(pd["Package ID"])+" | ").rjust(20," ")
-                        +("Address: " + str(pd["Address"])+", "+str(pd["City"])+", "+ str(pd["State"])+ " " + str(pd["Zip"]) +" |").rjust(65," ")
-                      + ("Deadline: " + str(pd["Deadline"]) + " | ").rjust(30," ")
-                      + ("Kg: " + str(pd["Kg"]) + " | ").rjust(10," ")
-                      + ("Special Notes" + str(pd["Special Notes"]) + " | ").rjust(90," ")
-                      + ("Status: "+ str(pd["Status"])).rjust(20," ")
-                      + ("Status: " + str(pd["Time Delivered"])).rjust(20, " ")
-                )
+                pd = item[0][1]  # Get package dictionary
+                time_delivered = pd["Time Delivered"]
+                if isinstance(time_delivered, datetime.datetime):
+                    if time_delivered < date_time:
+                        item_address_id = item[0][1]["Address ID"]
+                        # print("Address ID is "+item_address_id+"|  nodes_to_travel is "+str(Route.nodes_to_travel))
+                        # TODO: find status of package by linking it to nodes_to_travel then linking that to the package
+                        print(("Package ID: " + str(pd["Package ID"]) + " | ").rjust(20, " ")
+                              + (str(pd["Address"]) + ", " + str(pd["City"]) + ", " + str(pd["State"]) + " " + str(
+                            pd["Zip"]) + " |").rjust(70, " ")
+                              + (str(pd["Deadline"]) + " | ").rjust(30, " ")
+                              + ((pd["Kg"]) + " | ").rjust(10, " ")
+                              + (str(pd["Special Notes"]) + " | ").rjust(70, " ")
+                              + (str(pd["Status"]) + " |   ").rjust(20, " ")
+                              + (str(pd["Time Delivered"])).rjust(20, " ")
+                              )
+
+    @staticmethod
+    #Print the status of packages for the entire day
+    def print_package_statuses(package_hash_map):
+        end_of_day = datetime.datetime(2020, 1, 1, 23, 59)
+        Route.print_status_at_time(package_hash_map, end_of_day)
 
     @staticmethod
     def printDistArray():
