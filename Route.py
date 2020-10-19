@@ -8,9 +8,12 @@ class Route:
     idCounter = 0
     distance_dictionary = {}
     nodes_to_travel = []
+    priority_packages = []
+    priority_nodes = []
     node_travel_timestamp = {}
     minutes_elapsed = [0, 0]
     time = [datetime.datetime(2020, 1, 1, 8, 0), datetime.datetime(2020, 1, 1, 8, 0)]
+    total_miles = 0
 
 
     def __init__(self, address, distanceArray, isCompleted):
@@ -18,6 +21,14 @@ class Route:
         self.address = address
         self.isCompleted = False
         Route.idCounter += 1
+
+    @staticmethod
+    def set_priority_packages(package_hash_map):
+        for item in package_hash_map.map:
+            if item is not None:
+                 if item[0][1]["Deadline"] != "EOD":
+                     Route.priority_packages.append(item[0][1]["Package ID"])
+        #print(Route.priority_packages)
 
     @staticmethod
     #Sets which nodes need to be travelled
@@ -48,23 +59,60 @@ class Route:
         return Route.distance_dictionary[str(id)]
 
     @staticmethod
-    def get_closet_node(id):
+    #O(n) algorithm iterates through every node in the Route.nodes_to_travel array for the given ID only.
+    def select_node(package_hash_map, current_node_id):
         lowest = 10000000000
         lowest_node_id = -1
-        i = -1
+        #print("nodes to travel is ", Route.nodes_to_travel)
+        #print("priority nodes are ", Route.priority_nodes)
+        if len(Route.priority_packages) > 0:
+            for i in Route.nodes_to_travel:
+                distance_to_this_node = Route.distance_dictionary[str(current_node_id)][str(i)]
+                if float(distance_to_this_node) < float(lowest):
+                    if id != i:
+                        lowest_node_id = i
+                        lowest = distance_to_this_node
+            return lowest_node_id
         for i in Route.nodes_to_travel:
-            #print(Route.distance_dictionary[str(id)][str(i)])
-            distance_to_this_node = Route.distance_dictionary[str(id)][str(i)]
+            distance_to_this_node = Route.distance_dictionary[str(current_node_id)][str(i)]
             if float(distance_to_this_node) < float(lowest):
                 if id != i:
                     lowest_node_id = i
                     lowest = distance_to_this_node
-        #print("lowest is ", lowest)
         return lowest_node_id
+
+    @staticmethod
+    def init_priority_nodes(package_hash_map):
+
+        for item in package_hash_map.map:
+            if item is not None:
+                #print("item[0][1][Package ID]", item[0][1]["Package ID"], "Route.priority_packages, ", Route.priority_packages)
+                if str(item[0][1]["Package ID"]) in str(Route.priority_packages):
+                    Route.priority_nodes.append(item[0][1]["Address ID"])
+
 
     @staticmethod
     def get_distance_to_node(node_one, node_two):
         return Route.distance_dictionary[str(node_one)][str(node_two)]
+
+    @staticmethod
+    def verification(package_hash_map):
+        packages_sent = 0
+        for package in package_hash_map.map:
+            if package is not None:
+                if package[0][1]["Status"] == "Delivered":
+                    packages_sent += 1
+                else:
+                    print ("Not all packages have been delivered")
+                    return
+        print("Total Miles traveled: ", round(Route.total_miles,2) )
+        start_time = datetime.datetime(2020, 1, 1, 8, 0)
+        longer_time = datetime.datetime(2020, 1, 1, 8, 0)
+        if Route.time[0] > Route.time[1]:
+            longer_time = Route.time[0]
+        elif Route.time[1] > Route.time[0]:
+            longer_time = Route.time[1]
+        print("Total time elapsed: ", round((longer_time - start_time).total_seconds()/60, 2), " minutes")
 
     @staticmethod
     def miles_to_hour(miles):
@@ -79,37 +127,48 @@ class Route:
         return 18 * float(minutes) / 60
 
     @staticmethod
-    # Using the shortest path algorithm, we will set the routes for the trucks
-
+    # ALGORITHM: Using the shortest path algorithm, we will set the routes for the trucks
+    # O(n^2) algorithm. The "while" loop goes for n iterations (where n is the number of nodes with packages)
+    # and the "next_node" goes for another n.
+    # This code has a "for" loop for trucks, but this algorithm is O(n^2) because of the "Route.get_cloest_node" method.
     def create_route(packageHashMap):
-        truck_one = Truck.truck_list[0]
-        truck_two = Truck.truck_list[1]
         next_node = -1
         distance_to_next_node = 10000000
         while len(Route.nodes_to_travel) > 0:
-            for truck in [truck_one, truck_two]:
+            for truck in Truck.truck_list:
                 if isinstance(truck, Truck):
-                    next_node = Route.get_closet_node(truck.current_node) #get the closest node the current node of the truck
+                    next_node = Route.select_node(packageHashMap, truck.current_node) #get the closest node the current node of the truck
                     miles_to_next_node = Route.get_distance_to_node(truck.current_node, next_node)
                     Route.increment_time(truck.number, miles_to_next_node) #move the clock for this truck
                     Route.nodes_to_travel.remove(next_node) #take away nodes we have travelled to
                     Route.travel_to_next_node(truck, next_node)
                     Route.package_is_delivered(packageHashMap, next_node, Route.time[truck.number])
-        for truck in [truck_one, truck_two]:
+        for truck in Truck.truck_list:
             Route.travel_to_next_node(truck, 0)
 
     @staticmethod
+    #interface
+    def interface(package_hash_map):
+        hour = int(input("To check a specific time for the status of packages, start by entering an hour: "))
+        minute = int(input("What minute would you like to check for? "))
+        date_time = datetime.datetime(2020, 1, 1, hour, minute)
+        Route.print_status_at_time(package_hash_map, date_time)
+
+    @staticmethod
+    # Change the status of a package and add a timestamp
+    #O(n)
     def package_is_delivered(packagehashmap, address_number, timestamp):
         for package in packagehashmap.map:
             if package is not None:
                 if package[0][1]["Address ID"] == str(address_number):
                     package[0][1]["Status"] = "Delivered"
                     package[0][1]["Time Delivered"] = timestamp
-                print(package[0][1])
+                #print(package[0][1])
 
     @staticmethod
     def travel_to_next_node(truck, next_node):
-        distance_to_next_node = Route.get_distance_to_node(truck.current_node, next_node)  # get distance to the next node
+        distance_to_next_node = float(Route.get_distance_to_node(truck.current_node, next_node))  # get distance to the next node
+        Route.total_miles += distance_to_next_node
         Route.minutes_elapsed[truck.number] += Route.miles_to_minutes(float(distance_to_next_node))  # add the minutes travelled to minutes_elapsed array
         #print("Truck ", truck.number, "has traveled for ", Route.minutes_elapsed[truck.number]," minutes and ",Route.minutes_to_miles(Route.minutes_elapsed[truck.number])," miles.")
         Route.node_travel_timestamp[next_node] = Route.time[truck.number]

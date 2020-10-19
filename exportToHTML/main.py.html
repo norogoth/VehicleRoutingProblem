@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>main.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.py</font>
+</center></td></tr></table>
+<pre><span class="s0">#Landon Aaker</span>
+<span class="s0">#ID: 001236202</span>
+
+<span class="s2">from </span><span class="s1">HashMap </span><span class="s2">import </span><span class="s1">HashMap</span>
+<span class="s2">from </span><span class="s1">Route </span><span class="s2">import </span><span class="s1">Route</span>
+<span class="s2">from </span><span class="s1">Truck </span><span class="s2">import </span><span class="s1">Truck</span>
+<span class="s2">import </span><span class="s1">csv</span>
+<span class="s2">from </span><span class="s1">csv </span><span class="s2">import </span><span class="s1">DictReader</span>
+<span class="s2">import </span><span class="s1">datetime</span>
+
+<span class="s2">def </span><span class="s1">main():</span>
+
+    <span class="s1">package_hash_map = HashMap()</span>
+
+    <span class="s2">with </span><span class="s1">open(</span><span class="s3">'Resources/packageCSV.csv'</span><span class="s2">,</span><span class="s3">'r'</span><span class="s1">) </span><span class="s2">as </span><span class="s1">packageCSV:</span>
+        <span class="s1">dict_read_package = DictReader(packageCSV)</span>
+        <span class="s1">column_names = dict_read_package.fieldnames</span>
+        <span class="s1">column_names[</span><span class="s4">0</span><span class="s1">] = </span><span class="s3">'Package ID'</span>
+        <span class="s2">for </span><span class="s1">row </span><span class="s2">in </span><span class="s1">dict_read_package:</span>
+            <span class="s1">package_hash_map.add(row[</span><span class="s3">'Package ID'</span><span class="s1">]</span><span class="s2">, </span><span class="s1">row)</span>
+    <span class="s1">packageCSV.close()</span>
+
+    <span class="s1">Truck.create_trucks()</span>
+    <span class="s1">Truck.load(package_hash_map) </span><span class="s0">#load all the trucks with the packages. Clustered by zip code. Round robin zip code assignment.</span>
+    <span class="s1">Route.init_distance_table()</span>
+    <span class="s1">Route.init_nodes()</span>
+    <span class="s1">Route.create_route(package_hash_map)</span>
+    <span class="s1">nine_datetime = datetime.datetime(</span><span class="s4">2020</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">9</span><span class="s2">, </span><span class="s4">00</span><span class="s1">)</span>
+    <span class="s1">ten_datetime = datetime.datetime(</span><span class="s4">2020</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">10</span><span class="s2">, </span><span class="s4">00</span><span class="s1">)</span>
+    <span class="s1">one_datetime = datetime.datetime(</span><span class="s4">2020</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">1</span><span class="s2">, </span><span class="s4">13</span><span class="s2">, </span><span class="s4">00</span><span class="s1">)</span>
+    <span class="s1">Route.print_status_at_time(package_hash_map</span><span class="s2">, </span><span class="s1">nine_datetime)</span>
+    <span class="s1">Route.print_status_at_time(package_hash_map</span><span class="s2">, </span><span class="s1">ten_datetime)</span>
+    <span class="s1">Route.print_status_at_time(package_hash_map</span><span class="s2">, </span><span class="s1">one_datetime)</span>
+    <span class="s1">Route.print_package_statuses(package_hash_map)</span>
+
+    <span class="s1">Route.verification(package_hash_map)</span>
+
+<span class="s1">main()</span></pre>
+</body>
+</html>

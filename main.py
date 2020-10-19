@@ -10,27 +10,37 @@ import datetime
 
 def main():
 
-    packageHashMap = HashMap()
+    package_hash_map = HashMap()
 
     with open('Resources/packageCSV.csv','r') as packageCSV:
         dict_read_package = DictReader(packageCSV)
         column_names = dict_read_package.fieldnames
         column_names[0] = 'Package ID'
         for row in dict_read_package:
-            packageHashMap.add(row['Package ID'], row)
+            package_hash_map.add(row['Package ID'], row)
     packageCSV.close()
 
     Truck.create_trucks()
-    Truck.load(packageHashMap) #load all the trucks with the packages. Clustered by zip code. Round robin zip code assignment.
+    Truck.load(package_hash_map) #load all the trucks with the packages. Clustered by zip code. Round robin zip code assignment.
     Route.init_distance_table()
     Route.init_nodes()
-    Route.create_route(packageHashMap)
-    nine_datetime = datetime.datetime(2020, 1, 1, 9, 00)
-    ten_datetime = datetime.datetime(2020, 1, 1, 10, 00)
-    one_datetime = datetime.datetime(2020, 1, 1, 13, 00)
-    Route.print_status_at_time(packageHashMap, nine_datetime)
-    Route.print_status_at_time(packageHashMap, ten_datetime)
-    Route.print_status_at_time(packageHashMap, one_datetime)
-    Route.print_package_statuses(packageHashMap)
+    Route.set_priority_packages(package_hash_map)
+    Route.init_priority_nodes(package_hash_map)
+    Route.create_route(package_hash_map)
+
+    # nine_datetime = datetime.datetime(2020, 1, 1, 9, 00)
+    # ten_datetime = datetime.datetime(2020, 1, 1, 10, 00)
+    # one_datetime = datetime.datetime(2020, 1, 1, 13, 00)
+    # Route.print_status_at_time(package_hash_map, nine_datetime)
+    # Route.print_status_at_time(package_hash_map, ten_datetime)
+    # Route.print_status_at_time(package_hash_map, one_datetime)
+
+    Route.print_package_statuses(package_hash_map)
+    package_hash_map.self_adjust()
+    Route.verification(package_hash_map)
+    Route.interface(package_hash_map)
+
+    Route.set_priority_packages(package_hash_map)
+    Route.init_priority_nodes(package_hash_map)
 
 main()

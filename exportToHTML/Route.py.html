@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>Route.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Route.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">csv </span><span class="s0">import </span><span class="s1">DictReader</span>
+<span class="s0">from </span><span class="s1">Truck </span><span class="s0">import </span><span class="s1">Truck</span>
+<span class="s0">import </span><span class="s1">datetime</span>
+<span class="s0">from </span><span class="s1">datetime </span><span class="s0">import </span><span class="s1">timedelta</span>
+
+<span class="s0">class </span><span class="s1">Route:</span>
+
+    <span class="s1">idCounter = </span><span class="s2">0</span>
+    <span class="s1">distance_dictionary = {}</span>
+    <span class="s1">nodes_to_travel = []</span>
+    <span class="s1">node_travel_timestamp = {}</span>
+    <span class="s1">minutes_elapsed = [</span><span class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">]</span>
+    <span class="s1">time = [datetime.datetime(</span><span class="s2">2020</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">8</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">datetime.datetime(</span><span class="s2">2020</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">8</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)]</span>
+    <span class="s1">total_miles = </span><span class="s2">0</span>
+
+
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">address</span><span class="s0">, </span><span class="s1">distanceArray</span><span class="s0">, </span><span class="s1">isCompleted):</span>
+        <span class="s1">self.id = Route.idCounter</span>
+        <span class="s1">self.address = address</span>
+        <span class="s1">self.isCompleted = </span><span class="s0">False</span>
+        <span class="s1">Route.idCounter += </span><span class="s2">1</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s3">#Sets which nodes need to be travelled</span>
+    <span class="s0">def </span><span class="s1">init_nodes():</span>
+        <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(</span><span class="s2">1</span><span class="s0">, </span><span class="s2">27</span><span class="s1">):</span>
+            <span class="s1">Route.nodes_to_travel.append(i)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">increment_time(truck_number</span><span class="s0">, </span><span class="s1">miles):</span>
+        <span class="s1">minutes_passed = Route.miles_to_minutes(miles)</span>
+        <span class="s1">Route.time[truck_number] += timedelta(minutes=minutes_passed)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">init_distance_table():</span>
+        <span class="s3">#initialize Distance Table</span>
+        <span class="s0">with </span><span class="s1">open(</span><span class="s4">'Resources/DistanceTable4.csv'</span><span class="s0">, </span><span class="s4">'r'</span><span class="s1">) </span><span class="s0">as </span><span class="s1">distanceArrayCSV:</span>
+            <span class="s1">dict_read_dist_array = DictReader(distanceArrayCSV)</span>
+            <span class="s1">column_names = dict_read_dist_array.fieldnames</span>
+            <span class="s1">column_names[</span><span class="s2">0</span><span class="s1">] = </span><span class="s4">'ID'</span>
+            <span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">dict_read_dist_array:</span>
+                <span class="s3">#print(row['ID']+&quot;:   &quot;+str(row))</span>
+                <span class="s1">Route.distance_dictionary[row[</span><span class="s4">'ID'</span><span class="s1">]] = row</span>
+        <span class="s3">#Get Table to translate IDs into Distance Table</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s3">#return the distance dictionary for the given item</span>
+    <span class="s0">def </span><span class="s1">get_dist_dict(id):</span>
+        <span class="s0">return </span><span class="s1">Route.distance_dictionary[str(id)]</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_closet_node(id):</span>
+        <span class="s1">lowest = </span><span class="s2">10000000000</span>
+        <span class="s1">lowest_node_id = -</span><span class="s2">1</span>
+        <span class="s1">i = -</span><span class="s2">1</span>
+        <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">Route.nodes_to_travel:</span>
+            <span class="s3">#print(Route.distance_dictionary[str(id)][str(i)])</span>
+            <span class="s1">distance_to_this_node = Route.distance_dictionary[str(id)][str(i)]</span>
+            <span class="s0">if </span><span class="s1">float(distance_to_this_node) &lt; float(lowest):</span>
+                <span class="s0">if </span><span class="s1">id != i:</span>
+                    <span class="s1">lowest_node_id = i</span>
+                    <span class="s1">lowest = distance_to_this_node</span>
+        <span class="s3">#print(&quot;lowest is &quot;, lowest)</span>
+        <span class="s0">return </span><span class="s1">lowest_node_id</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_distance_to_node(node_one</span><span class="s0">, </span><span class="s1">node_two):</span>
+        <span class="s0">return </span><span class="s1">Route.distance_dictionary[str(node_one)][str(node_two)]</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">verification(package_hash_map):</span>
+        <span class="s1">packages_sent = </span><span class="s2">0</span>
+        <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">package_hash_map.map:</span>
+            <span class="s0">if </span><span class="s1">package </span><span class="s0">is not None</span><span class="s1">:</span>
+                <span class="s0">if </span><span class="s1">package[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">][</span><span class="s4">&quot;Status&quot;</span><span class="s1">] == </span><span class="s4">&quot;Delivered&quot;</span><span class="s1">:</span>
+                    <span class="s1">packages_sent += </span><span class="s2">1</span>
+                <span class="s0">else</span><span class="s1">:</span>
+                    <span class="s1">print (</span><span class="s4">&quot;Not all packages have been delivered&quot;</span><span class="s1">)</span>
+                    <span class="s0">return</span>
+        <span class="s1">print(</span><span class="s4">&quot;Total Miles traveled: &quot;</span><span class="s0">, </span><span class="s1">round(Route.total_miles</span><span class="s0">,</span><span class="s2">2</span><span class="s1">) )</span>
+        <span class="s1">start_time = datetime.datetime(</span><span class="s2">2020</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">8</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span>
+        <span class="s1">longer_time = datetime.datetime(</span><span class="s2">2020</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">8</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span>
+        <span class="s0">if </span><span class="s1">Route.time[</span><span class="s2">0</span><span class="s1">] &gt; Route.time[</span><span class="s2">1</span><span class="s1">]:</span>
+            <span class="s1">longer_time = Route.time[</span><span class="s2">0</span><span class="s1">]</span>
+        <span class="s0">elif </span><span class="s1">Route.time[</span><span class="s2">1</span><span class="s1">] &gt; Route.time[</span><span class="s2">0</span><span class="s1">]:</span>
+            <span class="s1">longer_time = Route.time[</span><span class="s2">1</span><span class="s1">]</span>
+        <span class="s1">print(</span><span class="s4">&quot;Total time elapsed: &quot;</span><span class="s0">, </span><span class="s1">round((longer_time - start_time).total_seconds()/</span><span class="s2">60</span><span class="s0">, </span><span class="s2">2</span><span class="s1">)</span><span class="s0">, </span><span class="s4">&quot; minutes&quot;</span><span class="s1">)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">miles_to_hour(miles):</span>
+        <span class="s0">return </span><span class="s1">float(miles)/</span><span class="s2">18.0</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">miles_to_minutes(miles):</span>
+        <span class="s0">return </span><span class="s2">60 </span><span class="s1">* float(miles) / </span><span class="s2">18.0</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">minutes_to_miles(minutes):</span>
+        <span class="s0">return </span><span class="s2">18 </span><span class="s1">* float(minutes) / </span><span class="s2">60</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s3"># Using the shortest path algorithm, we will set the routes for the trucks</span>
+
+    <span class="s0">def </span><span class="s1">create_route(packageHashMap):</span>
+        <span class="s1">truck_one = Truck.truck_list[</span><span class="s2">0</span><span class="s1">]</span>
+        <span class="s1">truck_two = Truck.truck_list[</span><span class="s2">1</span><span class="s1">]</span>
+        <span class="s1">next_node = -</span><span class="s2">1</span>
+        <span class="s1">distance_to_next_node = </span><span class="s2">10000000</span>
+        <span class="s0">while </span><span class="s1">len(Route.nodes_to_travel) &gt; </span><span class="s2">0</span><span class="s1">:</span>
+            <span class="s0">for </span><span class="s1">truck </span><span class="s0">in </span><span class="s1">[truck_one</span><span class="s0">, </span><span class="s1">truck_two]:</span>
+                <span class="s0">if </span><span class="s1">isinstance(truck</span><span class="s0">, </span><span class="s1">Truck):</span>
+                    <span class="s1">next_node = Route.get_closet_node(truck.current_node) </span><span class="s3">#get the closest node the current node of the truck</span>
+                    <span class="s1">miles_to_next_node = Route.get_distance_to_node(truck.current_node</span><span class="s0">, </span><span class="s1">next_node)</span>
+                    <span class="s1">Route.increment_time(truck.number</span><span class="s0">, </span><span class="s1">miles_to_next_node) </span><span class="s3">#move the clock for this truck</span>
+                    <span class="s1">Route.nodes_to_travel.remove(next_node) </span><span class="s3">#take away nodes we have travelled to</span>
+                    <span class="s1">Route.travel_to_next_node(truck</span><span class="s0">, </span><span class="s1">next_node)</span>
+                    <span class="s1">Route.package_is_delivered(packageHashMap</span><span class="s0">, </span><span class="s1">next_node</span><span class="s0">, </span><span class="s1">Route.time[truck.number])</span>
+        <span class="s0">for </span><span class="s1">truck </span><span class="s0">in </span><span class="s1">[truck_one</span><span class="s0">, </span><span class="s1">truck_two]:</span>
+            <span class="s1">Route.travel_to_next_node(truck</span><span class="s0">, </span><span class="s2">0</span><span class="s1">)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s3"># Change the status of a package and add a timestamp</span>
+    <span class="s0">def </span><span class="s1">package_is_delivered(packagehashmap</span><span class="s0">, </span><span class="s1">address_number</span><span class="s0">, </span><span class="s1">timestamp):</span>
+        <span class="s0">for </span><span class="s1">package </span><span class="s0">in </span><span class="s1">packagehashmap.map:</span>
+            <span class="s0">if </span><span class="s1">package </span><span class="s0">is not None</span><span class="s1">:</span>
+                <span class="s0">if </span><span class="s1">package[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">][</span><span class="s4">&quot;Address ID&quot;</span><span class="s1">] == str(address_number):</span>
+                    <span class="s1">package[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">][</span><span class="s4">&quot;Status&quot;</span><span class="s1">] = </span><span class="s4">&quot;Delivered&quot;</span>
+                    <span class="s1">package[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">][</span><span class="s4">&quot;Time Delivered&quot;</span><span class="s1">] = timestamp</span>
+                <span class="s3">#print(package[0][1])</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">travel_to_next_node(truck</span><span class="s0">, </span><span class="s1">next_node):</span>
+        <span class="s1">distance_to_next_node = float(Route.get_distance_to_node(truck.current_node</span><span class="s0">, </span><span class="s1">next_node))  </span><span class="s3"># get distance to the next node</span>
+        <span class="s1">Route.total_miles += distance_to_next_node</span>
+        <span class="s1">Route.minutes_elapsed[truck.number] += Route.miles_to_minutes(float(distance_to_next_node))  </span><span class="s3"># add the minutes travelled to minutes_elapsed array</span>
+        <span class="s3">#print(&quot;Truck &quot;, truck.number, &quot;has traveled for &quot;, Route.minutes_elapsed[truck.number],&quot; minutes and &quot;,Route.minutes_to_miles(Route.minutes_elapsed[truck.number]),&quot; miles.&quot;)</span>
+        <span class="s1">Route.node_travel_timestamp[next_node] = Route.time[truck.number]</span>
+
+    <span class="s3"># @staticmethod</span>
+    <span class="s3"># def</span>
+
+    <span class="s1">@staticmethod</span>
+
+    <span class="s0">def </span><span class="s1">print_status_at_time(package_hash_map</span><span class="s0">, </span><span class="s1">date_time):</span>
+        <span class="s1">print( </span><span class="s4">&quot;===============================================</span><span class="s0">\n</span><span class="s4">&quot;</span>
+              <span class="s1">+ </span><span class="s4">&quot;Package status by &quot; </span><span class="s1">+ str(date_time.hour) + </span><span class="s4">&quot;:&quot; </span><span class="s1">+ str(date_time.minute) + </span><span class="s4">&quot;</span><span class="s0">\n</span><span class="s4">&quot;</span>
+        <span class="s1">+ </span><span class="s4">&quot;===============================================</span><span class="s0">\n</span><span class="s4">&quot;</span><span class="s1">)</span>
+        <span class="s1">print((</span><span class="s4">&quot;Package ID&quot; </span><span class="s1">+ </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">20</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;Address&quot; </span><span class="s1">+ </span><span class="s4">&quot; |&quot;</span><span class="s1">).rjust(</span><span class="s2">70</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;Deadline: &quot; </span><span class="s1">+ </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">30</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;Kg&quot; </span><span class="s1">+ </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">10</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;Special Notes&quot; </span><span class="s1">+ </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">70</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;Status&quot; </span><span class="s1">+ </span><span class="s4">&quot; |   &quot;</span><span class="s1">).rjust(</span><span class="s2">20</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">+ (</span><span class="s4">&quot;TimeStamp&quot; </span><span class="s1">+ </span><span class="s4">&quot; |   &quot;</span><span class="s1">).rjust(</span><span class="s2">23</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+             <span class="s1">)</span>
+        <span class="s0">for </span><span class="s1">item </span><span class="s0">in </span><span class="s1">package_hash_map.map:</span>
+            <span class="s0">if </span><span class="s1">item </span><span class="s0">is not None</span><span class="s1">:</span>
+                <span class="s1">pd = item[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">]  </span><span class="s3"># Get package dictionary</span>
+                <span class="s1">time_delivered = pd[</span><span class="s4">&quot;Time Delivered&quot;</span><span class="s1">]</span>
+                <span class="s0">if </span><span class="s1">isinstance(time_delivered</span><span class="s0">, </span><span class="s1">datetime.datetime):</span>
+                    <span class="s0">if </span><span class="s1">time_delivered &lt; date_time:</span>
+                        <span class="s1">item_address_id = item[</span><span class="s2">0</span><span class="s1">][</span><span class="s2">1</span><span class="s1">][</span><span class="s4">&quot;Address ID&quot;</span><span class="s1">]</span>
+                        <span class="s3"># print(&quot;Address ID is &quot;+item_address_id+&quot;|  nodes_to_travel is &quot;+str(Route.nodes_to_travel))</span>
+                        <span class="s3"># TODO: find status of package by linking it to nodes_to_travel then linking that to the package</span>
+                        <span class="s1">print((</span><span class="s4">&quot;Package ID: &quot; </span><span class="s1">+ str(pd[</span><span class="s4">&quot;Package ID&quot;</span><span class="s1">]) + </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">20</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ (str(pd[</span><span class="s4">&quot;Address&quot;</span><span class="s1">]) + </span><span class="s4">&quot;, &quot; </span><span class="s1">+ str(pd[</span><span class="s4">&quot;City&quot;</span><span class="s1">]) + </span><span class="s4">&quot;, &quot; </span><span class="s1">+ str(pd[</span><span class="s4">&quot;State&quot;</span><span class="s1">]) + </span><span class="s4">&quot; &quot; </span><span class="s1">+ str(</span>
+                            <span class="s1">pd[</span><span class="s4">&quot;Zip&quot;</span><span class="s1">]) + </span><span class="s4">&quot; |&quot;</span><span class="s1">).rjust(</span><span class="s2">70</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ (str(pd[</span><span class="s4">&quot;Deadline&quot;</span><span class="s1">]) + </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">30</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ ((pd[</span><span class="s4">&quot;Kg&quot;</span><span class="s1">]) + </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">10</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ (str(pd[</span><span class="s4">&quot;Special Notes&quot;</span><span class="s1">]) + </span><span class="s4">&quot; | &quot;</span><span class="s1">).rjust(</span><span class="s2">70</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ (str(pd[</span><span class="s4">&quot;Status&quot;</span><span class="s1">]) + </span><span class="s4">&quot; |   &quot;</span><span class="s1">).rjust(</span><span class="s2">20</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">+ (str(pd[</span><span class="s4">&quot;Time Delivered&quot;</span><span class="s1">])).rjust(</span><span class="s2">20</span><span class="s0">, </span><span class="s4">&quot; &quot;</span><span class="s1">)</span>
+                              <span class="s1">)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s3">#Print the status of packages for the entire day</span>
+    <span class="s0">def </span><span class="s1">print_package_statuses(package_hash_map):</span>
+        <span class="s1">end_of_day = datetime.datetime(</span><span class="s2">2020</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">1</span><span class="s0">, </span><span class="s2">23</span><span class="s0">, </span><span class="s2">59</span><span class="s1">)</span>
+        <span class="s1">Route.print_status_at_time(package_hash_map</span><span class="s0">, </span><span class="s1">end_of_day)</span>
+
+    <span class="s1">@staticmethod</span>
+    <span class="s0">def </span><span class="s1">printDistArray():</span>
+        <span class="s1">d = Route.distance_dictionary</span>
+        <span class="s0">for </span><span class="s1">key </span><span class="s0">in </span><span class="s1">d:</span>
+            <span class="s1">print(key+</span><span class="s4">&quot;: &quot;</span><span class="s1">+str(d[key]))</span></pre>
+</body>
+</html>
